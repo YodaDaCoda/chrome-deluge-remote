@@ -1,7 +1,7 @@
 {
 	"name": "Remote Deluge",
 	"description": "Provides a quick overview of torrent status for Deluge.",
-	"version": "1.2.4",
+	"version": "2.0.0",
 	"icons": {
 		"128": "images/icons/128.png",
 		"64": "images/icons/64.png",
@@ -15,8 +15,8 @@
 	"default_locale": "en",
 	"background": {
 		"scripts": [
-			"js/libs/jquery-3.0.0.min.js",
-			"js/global_options.js",
+			"libs/jquery/3.1.1/jquery.min.js",
+			"js/ExtensionConfig.js",
 			"js/debug_log.js",
 			"js/deluge.js",
 			"js/background.js"
@@ -32,23 +32,22 @@
 	"content_scripts": [
 		{
 			"matches": [
-				"http://*/*",
-				"https://*/*"
+				"*://*/*"
 			],
 			"js": [
-				"js/libs/jquery-3.0.0.min.js",
-				"js/global_options.js",
+				"libs/jquery/3.1.1/jquery.min.js",
+				"js/ExtensionConfig.js",
 				"js/debug_log.js",
 				"js/add_torrent.js"
 			]
 		}
 	],
 	"permissions": [
-		 "tabs",
-		 "contextMenus",
-		 "storage",
-		 "http://*/*",
-		 "https://*/*"
+		"tabs",
+		"contextMenus",
+		"storage",
+		"cookies",
+		"*://*/*"
 	],
 	"manifest_version": 2
 }

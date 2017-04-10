@@ -1,0 +1,518 @@
+@import 'clearfix';
+
+@import 'colors';
+
+$_color-theme-progress-queued-border: #aca712;
+$_color-theme-progress-queued-top: #d9d300;
+$_color-theme-progress-queued-middle: #bfba14;
+$_color-theme-progress-queued-bottom: #d9d300;
+
+$_color-theme-progress-paused-border: #8b8b8b;
+$_color-theme-progress-paused-top: $color-silver;
+$_color-theme-progress-paused-middle: #999999;
+$_color-theme-progress-paused-bottom: $color-silver;
+
+$_color-theme-progress-downloading-border: #29ad35;
+$_color-theme-progress-downloading-top: #45e25d;
+$_color-theme-progress-downloading-middle: #3ec953;
+$_color-theme-progress-downloading-bottom: #45e25d;
+
+$_color-theme-progress-seeding-border: #8b8b8b;
+$_color-theme-progress-seeding-top: #a7bfca;
+$_color-theme-progress-seeding-middle: #80a3b2;
+$_color-theme-progress-seeding-bottom: #a7bfca;
+
+$_color-theme-progress-checking-border: #8b8b8b;
+$_color-theme-progress-checking-top: $color-theme-grey;
+$_color-theme-progress-checking-middle: #999999;
+$_color-theme-progress-checking-bottom: $color-theme-grey;
+
+$_color-theme-progress-error-border: $color-red;
+$_color-theme-progress-error-top: #cc0000;
+$_color-theme-progress-error-middle: $color-darkred;
+$_color-theme-progress-error-bottom: #cc0000;
+
+html {
+  width: 560px;
+}
+
+body {
+  width: 558px;
+  font-size: 12px;
+}
+
+.logo-small {
+  width: 16px;
+  height: 16px;
+}
+
+
+.dialog {
+  .inner {
+    margin: 20px auto 0;
+    width: 500px;
+  }
+
+  .header {
+    position: relative;
+    border: 0;
+    border-bottom: 1px solid $color-theme-lightgrey;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    background-image: linear-gradient(to bottom, $color-theme-verylightgrey 18%, $color-theme-lightgrey 52%);
+    background-repeat: no-repeat;
+    background-position: left 2px;
+    padding: 5px;
+    text-shadow: 0 1px 0 $color-white;
+    font-size: 1.2em;
+    font-weight: bold;
+
+    .close {
+      position: absolute;
+      right: 5px;
+      border: 0;
+      background: url('/themes/standard/images/close.png') no-repeat left top;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .body {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    background: $color-white;
+    padding: 5px;
+    overflow: hidden;
+  }
+}
+
+
+#add-torrent-dialog #manual_add_input {
+  width: 99%;
+}
+
+#add-torrent-dialog #manual_add_button {
+  float: right;
+  border: 1px solid $color-theme-grey;
+}
+
+#add-torrent {
+  display: block;
+  float: right;
+  margin: 8px 0 0;
+  border: 0;
+  background: url('/images/add_torrent.png') no-repeat left top;
+  width: 22px;
+  height: 22px;
+  text-decoration: none;
+
+  span {
+    display: none;
+  }
+}
+
+#overlay,
+.dialog {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  background: $color-black;
+  width: 100%;
+  height: 100%;
+  font-size: 1.2em;
+}
+
+#overlay {
+  height: 100vh;
+
+  .overlay_inner {
+    display: table;
+    margin: 0 auto;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    background: $color-theme-lightred;
+    padding: 1em;
+    vertical-align: middle;
+    line-height: 16px;
+
+    span {
+      vertical-align: middle;
+    }
+
+    .error {
+      display: inline-block;
+      background: url('/themes/standard/images/error.png') no-repeat left top;
+      padding-left: 35px;
+      height: 24px;
+      vertical-align: middle;
+      line-height: 24px;
+    }
+  }
+}
+
+#global-information {
+  position: absolute;
+  bottom: 10px;
+  left: 130px;
+  color: $color-darkred;
+
+  .data {
+    margin-right: 10px;
+    font-weight: bold;
+  }
+}
+
+#deluge_webui_link {
+  display: inline-block;
+  border: 0;
+  text-decoration: none;
+}
+
+#filters {
+  display: block;
+  position: relative;
+  border: 1px solid $color-theme-lightgrey;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  background-image: linear-gradient(to bottom, $color-white, $color-theme-verylightgrey);
+  background-repeat: no-repeat;
+  background-position: left 2px;
+  padding: 3px;
+  width: 552px;
+  min-height: 18px;
+  border-spacing: 0;
+  font-size: 1.2em;
+}
+
+#torrent_container {
+  border: 1px solid $color-theme-lightgrey;
+  border-top: 0;
+  width: 100%;
+}
+
+.popup_heading {
+  position: relative;
+}
+
+.twistie {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  transition: transform 300ms ease-in-out;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  font-size: 32px;
+}
+
+.twistie::after {
+  display: block;
+  height: 16px;
+  text-align: right;
+  line-height: 10px;
+  content: '‹';
+}
+
+.twistie_left {
+  transform: rotate(0deg);
+}
+
+.twistie_sub {
+  transition: height 300ms ease-in-out, opacity 300ms ease-in-out 300ms;
+  visibility: hidden;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.twistie_down {
+  transform: rotate(-450deg);
+
+  + .twistie_sub {
+    visibility: visible;
+    opacity: 1;
+    height: 76px;
+  }
+}
+
+.torrent_row {
+  position: relative;
+  border-top: 1px solid $color-theme-grey;
+  padding: 2px;
+  box-sizing: border-box;
+
+  &.Paused .action_button.state.resume {
+    display: block;
+  }
+
+  &.Downloading .action_button.state.pause,
+  &.Seeding .action_button.state.pause {
+    display: block;
+  }
+}
+
+.torrent_row:nth-child(1) {
+  border-top: 0;
+}
+
+.torrent_row:nth-child(even) {
+  background-color: $color-theme-verylightgrey;
+}
+
+.table_cell_name {
+  width: 100%;
+  word-break: break-all;
+  font-size: 9pt;
+  font-weight: bold;
+}
+
+.no_torrents {
+  border: 1px solid transparent; // dummy border makes the #container correctly show its border
+  text-align: center;
+  font-size: 20px;
+}
+
+.table_cell_actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  text-align: right;
+
+  a {
+    display: inline-block;
+    margin: 0 1px;
+    border: 0;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+  }
+
+  .state {
+    background: url('/images/pause.png') no-repeat top left;
+
+    &.resume {
+      background: url('/images/start.png') no-repeat top left;
+    }
+  }
+
+  .move_up {
+    background: url('/images/up.png') no-repeat left top;
+  }
+
+  .move_down {
+    background: url('/images/down.png') no-repeat left top;
+  }
+
+  .managed {
+    background: url('/images/manage_active.png') no-repeat top left;
+  }
+
+  .unmanaged {
+    background: url('/images/manage.png') no-repeat top left;
+  }
+
+  .force_recheck {
+    background: url('/images/recheck.png') no-repeat top left;
+  }
+
+  .delete {
+    background: url('/images/remove.png') no-repeat left top;
+  }
+}
+
+.delete_actions,
+.main_actions {
+  @extend %clearfix;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transition: visibility linear 300ms, opacity 300ms ease-in-out;
+  visibility: visible;
+  opacity: 1;
+  border: 1px solid transparent;
+  text-align: right;
+}
+
+.delete_actions.hidden,
+.main_actions.hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+.action_button.state {
+  display: none;
+}
+
+.delete_actions .action_button,
+.main_actions .action_button {
+  float: right;
+  margin-right: 2px;
+  width: 16px;
+  height: 16px;
+}
+
+.filter_option,
+.sort_option {
+  @extend %clearfix;
+  margin: 1px 0;
+  line-height: 18px;
+}
+
+.filter_options .filter_option_input,
+.filter_options .filter_option_invert,
+.filter_options .filter_option_invert_label,
+.filter_options .filter_option_label {
+  display: block;
+  float: left;
+  margin: 0;
+  padding: 0;
+  height: 18px;
+  box-sizing: border-box;
+}
+
+.filter_options .filter_option_label {
+  padding-right: 1ex;
+  width: 10%;
+  text-align: right;
+}
+
+.filter_options .filter_option_input {
+  width: 50%;
+}
+
+.filter_options .filter_option_invert {
+  margin: 0 1%;
+}
+
+.progress_bar_text {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 1px solid transparent;
+  text-align: center;
+  text-shadow: 0 0 3px $color-black, 0 0 3px $color-black, 0 0 3px $color-black;
+  line-height: 16px;
+  color: $color-white;
+  font-size: 10px;
+}
+
+.info_row {
+  position: relative;
+  margin: 2px 0;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &.heading {
+    display: flex;
+  }
+
+  &.details {
+    display: flex;
+    flex-direction: row;
+
+    .details_item {
+      flex: 1 1;
+      flex-basis: auto;
+      text-align: center;
+      font-size: 10px;
+
+      &.table_cell_size {
+        text-align: left;
+      }
+
+      &.table_cell_speed {
+        text-align: right;
+      }
+    }
+  }
+}
+
+.table_cell_position {
+  padding-right: 0.5ex;
+  width: auto;
+}
+
+.table_cell_position:empty {
+  display: none;
+}
+
+.progress_bar_outer {
+  position: relative;
+  background: $color-theme-grey;
+  width: 100%;
+
+  .progress_bar_inner {
+    border-width: 1px;
+    border-right-width: 0;
+    border-style: solid;
+    width: 0;
+    height: 18px;
+    text-align: center;
+    box-sizing: border-box;
+
+    &.Queued { // Queued is yellowish
+      border-color: $_color-theme-progress-queued-border;
+      background: linear-gradient(to bottom, $_color-theme-progress-queued-top 50%, $_color-theme-progress-queued-middle 50%, $_color-theme-progress-queued-bottom);
+    }
+
+    &.Paused { // Paused is grey
+      border-color: $_color-theme-progress-paused-border;
+      background: linear-gradient(to bottom, $_color-theme-progress-paused-top 50%, $_color-theme-progress-paused-middle 50%, $_color-theme-progress-paused-bottom);
+    }
+
+    &.Downloading { // Downloading is green
+      border-color: $_color-theme-progress-downloading-border;
+      background: linear-gradient(to bottom, $_color-theme-progress-downloading-top 50%, $_color-theme-progress-downloading-middle 50%, $_color-theme-progress-downloading-bottom);
+    }
+
+    &.Seeding { // Seeding is blue
+      border-color: $_color-theme-progress-seeding-border;
+      background: linear-gradient(to bottom, $_color-theme-progress-seeding-top 50%, $_color-theme-progress-seeding-middle 50%, $_color-theme-progress-seeding-bottom);
+    }
+
+    &.Checking {  // Checking is grey
+      border-color: $_color-theme-progress-checking-border;
+      background: linear-gradient(to bottom, $_color-theme-progress-checking-top 50%, $_color-theme-progress-checking-middle 50%, $_color-theme-progress-checking-bottom);
+    }
+
+    &.Error { // Error is red
+      border-color: $_color-theme-progress-error-border;
+      background: linear-gradient(to bottom, $_color-theme-progress-error-top 50%, $_color-theme-progress-error-middle 50%, $_color-theme-progress-error-bottom);
+    }
+
+    &.finished {
+      border-right-width: 1px;
+    }
+
+  }
+}
+
+.delete_actions {
+  .rm_cancel {
+    background: url('/images/cancel.png') no-repeat left top;
+  }
+
+  .rm_torrent {
+    background: url('/images/torrent_file.png') no-repeat left top;
+  }
+
+  .rm_torrent_data {
+    background: url('/images/trash.png') no-repeat left top;
+  }
+}

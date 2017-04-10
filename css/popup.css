@@ -1,257 +1,484 @@
+@charset "UTF-8";
+.delete_actions::after,
+.main_actions::after, .filter_option::after,
+.sort_option::after {
+  display: block;
+  clear: both;
+  content: '';
+}
+
 html {
-	width: 560px;
+  width: 560px;
 }
 
 body {
-	width: 558px;
-	font-family: "MS Trebuchet", Arial, Helvetica, sans-serif;
-	font-size: 62.5%;
+  width: 558px;
+  font-size: 12px;
 }
 
-#overlay, .dialog {
-	background: rgba(0, 0, 0, 0.9);
-	display: none;
-	font-size: 1.2em;
-	height: 100%;
-	left: 0;
-	position: absolute;
-	width: 100%;
-	top: 0;
-	z-index: 999;
+.logo-small {
+  width: 16px;
+  height: 16px;
+}
+
+.dialog .inner {
+  margin: 20px auto 0;
+  width: 500px;
+}
+
+.dialog .header {
+  position: relative;
+  border: 0;
+  border-bottom: 1px solid #cccccc;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  background-image: linear-gradient(to bottom, #eeeeee 18%, #cccccc 52%);
+  background-repeat: no-repeat;
+  background-position: left 2px;
+  padding: 5px;
+  text-shadow: 0 1px 0 #ffffff;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.dialog .header .close {
+  position: absolute;
+  right: 5px;
+  border: 0;
+  background: url("/themes/standard/images/close.png") no-repeat left top;
+  width: 16px;
+  height: 16px;
+}
+
+.dialog .body {
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  background: #ffffff;
+  padding: 5px;
+  overflow: hidden;
+}
+
+#add-torrent-dialog #manual_add_input {
+  width: 99%;
+}
+
+#add-torrent-dialog #manual_add_button {
+  float: right;
+  border: 1px solid #aaaaaa;
+}
+
+#add-torrent {
+  display: block;
+  float: right;
+  margin: 8px 0 0;
+  border: 0;
+  background: url("/images/add_torrent.png") no-repeat left top;
+  width: 22px;
+  height: 22px;
+  text-decoration: none;
+}
+
+#add-torrent span {
+  display: none;
+}
+
+#overlay,
+.dialog {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  background: #000000;
+  width: 100%;
+  height: 100%;
+  font-size: 1.2em;
+}
+
+#overlay {
+  height: 100vh;
 }
 
 #overlay .overlay_inner {
-	background: #F5A5A5;
-	border-bottom-left-radius: 5px;
-	border-bottom-right-radius: 5px;
-	display: table;
- /* Allows us to shrink to content and centre with auto margin */
-	line-height: 16px;
-	margin: 0 auto;
-	padding: 1em;
-	vertical-align: middle;
+  display: table;
+  margin: 0 auto;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  background: #f5a5a5;
+  padding: 1em;
+  vertical-align: middle;
+  line-height: 16px;
 }
 
 #overlay .overlay_inner span {
-	vertical-align: middle;
+  vertical-align: middle;
 }
 
 #overlay .overlay_inner .error {
-	background: url(/themes/standard/images/error.png) no-repeat left top;
-	display: inline-block;
-	height: 24px;
-	line-height: 24px;
-	padding-left: 35px;
-	vertical-align: middle;
+  display: inline-block;
+  background: url("/themes/standard/images/error.png") no-repeat left top;
+  padding-left: 35px;
+  height: 24px;
+  vertical-align: middle;
+  line-height: 24px;
 }
 
 #global-information {
-	position: absolute;
-	top: 4px;
-	left: 110px;
-	padding: 5px;
-	font-size: 1.1em;
-	color: darkRed;
+  position: absolute;
+  bottom: 10px;
+  left: 130px;
+  color: #8b0000;
 }
 
-#global-information span.data {
-	font-weight: bold;
-	margin-right: 10px;
+#global-information .data {
+  margin-right: 10px;
+  font-weight: bold;
 }
 
 #deluge_webui_link {
-	display:inline-block;
-	border:0;
+  display: inline-block;
+  border: 0;
+  text-decoration: none;
 }
 
-
 #filters {
-	display:block;
-	border-spacing: 0;
-	font-size: 1.2em;
-	width: 552px;
-	background-image: linear-gradient(to bottom, #FDFDFD, #E9E9E9);
-	background-repeat: no-repeat;
-	background-position: left 2px;
-	border: 1px solid #CCC;
-	padding: 3px;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
+  display: block;
+  position: relative;
+  border: 1px solid #cccccc;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  background-image: linear-gradient(to bottom, #ffffff, #eeeeee);
+  background-repeat: no-repeat;
+  background-position: left 2px;
+  padding: 3px;
+  width: 552px;
+  min-height: 18px;
+  border-spacing: 0;
+  font-size: 1.2em;
 }
 
 #torrent_container {
-	border: 1px solid #CCC;
-	border-top: 0px;
-	width: 100%;
+  border: 1px solid #cccccc;
+  border-top: 0;
+  width: 100%;
+}
+
+.popup_heading {
+  position: relative;
+}
+
+.twistie {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  transition: transform 300ms ease-in-out;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  font-size: 32px;
+}
+
+.twistie::after {
+  display: block;
+  height: 16px;
+  text-align: right;
+  line-height: 10px;
+  content: '‹';
+}
+
+.twistie_left {
+  transform: rotate(0deg);
+}
+
+.twistie_sub {
+  transition: height 300ms ease-in-out, opacity 300ms ease-in-out 300ms;
+  visibility: hidden;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.twistie_down {
+  transform: rotate(-450deg);
+}
+
+.twistie_down + .twistie_sub {
+  visibility: visible;
+  opacity: 1;
+  height: 76px;
 }
 
 .torrent_row {
-	border-top: 1px solid #AAA;
-	position: relative;
+  position: relative;
+  border-top: 1px solid #aaaaaa;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.torrent_row.Paused .action_button.state.resume {
+  display: block;
+}
+
+.torrent_row.Downloading .action_button.state.pause,
+.torrent_row.Seeding .action_button.state.pause {
+  display: block;
 }
 
 .torrent_row:nth-child(1) {
-	border-top: 0px;
+  border-top: 0;
 }
 
 .torrent_row:nth-child(even) {
-	background-color: #EEE;
+  background-color: #eeeeee;
 }
 
-.torrent_row table {
-	width: 100%;
-}
-
-.table_cell_position {
-	width: 25px;
-}
 .table_cell_name {
-	width: 100%;
-	font-weight: bold;
-	font-size:	9pt;
-	word-break: break-all;
+  width: 100%;
+  word-break: break-all;
+  font-size: 9pt;
+  font-weight: bold;
 }
 
-.table_cell_size {
-	text-align: left;
-	width: 25%;
-}
-
-.table_cell_eta {
-	text-align:	left;
-}
-
-.table_cell_speed {
-	text-align:	right;
+.no_torrents {
+  border: 1px solid transparent;
+  text-align: center;
+  font-size: 20px;
 }
 
 .table_cell_actions {
-	position: absolute;
-	bottom: 5px;
-	right: 5px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  text-align: right;
 }
-
-
-.progress_bar span {
-	color: #FFF;
-	display: block;
-	font-size: 0.9em;
-	font-family: Verdana;
-	text-align: center;
-	width: 100%;
-	line-height: 20px;
-	position: absolute;
-	left: 0;
-	top: 0;
-	text-shadow: 0px 0px 3px #000, 0px 0px 3px #000, 0px 0px 3px #000;
-}
-
-.progress_bar {
-	background: #CCC;
-	position: relative;
-	width: 100%;
-}
-
-.progress_bar .inner {
-	height: 17px;
-	width: 0%;
-	text-align: center;
-}
-
-.progress_bar .inner.Queued {	/* Queued is yellowish */
-	background: linear-gradient(to bottom, #D9D300 50%, #BFBA14 50%, #D9D300);
-	border: 1px solid #ACA712;
-	border-right: none;
-}
-.progress_bar .inner.Queued.finished {
-	border: 1px solid #ACA712;
-}
-
-.progress_bar .inner.Paused {	/* Paused is grey */
-	background: linear-gradient(to bottom, #C0C0C0 50%, #9A9A9A 50%, #C0C0C0);
-	border: 1px solid #8B8B8B;
-	border-right: none;
-}
-.progress_bar .inner.Paused.finished {
-	border: 1px solid #8B8B8B;
-}
-
-.progress_bar .inner.Downloading {	/* Downloading is green */
-	background: linear-gradient(to bottom, #45E25D 50%, #3EC953 50%, #45E25D);
-	border: 1px solid #29AD35;
-	border-right: none;
-}
-
-.progress_bar .inner.Error {	/* Error is red */
-	background: linear-gradient(to bottom, #CC0000 50%, #990000 50%, #CC0000);
-	border: 1px solid #FF0000;
-	border-right: none;
-}
-.progress_bar .inner.Error.finished {
-	border: 1px solid #FF0000;
-}
-
-.progress_bar .inner.Seeding {	/* Seeding is blue */
-	background: linear-gradient(to bottom, #A7BFCA 50%, #80A3B2 50%, #A7BFCA);
-	border: 1px solid #8B8B8B;
-}
-
-.progress_bar .inner.Checking {	/* Checking is grey */
-	background: linear-gradient(to bottom, #ADADAD 50%, #999999 50%, #ADADAD);
-	border: 1px solid #8A8A8A;
-}
-
-
 
 .table_cell_actions a {
-	border: 0;
-	cursor: pointer;
-	display: inline-block;
-	height: 16px;
-	margin: 0 1px;
-	width: 16px;
+  display: inline-block;
+  margin: 0 1px;
+  border: 0;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
 }
 
 .table_cell_actions .state {
-	background: url(/images/pause.png) no-repeat top left;
+  background: url("/images/pause.png") no-repeat top left;
 }
+
 .table_cell_actions .state.resume {
-	background: url(/images/start.png) no-repeat top left;
+  background: url("/images/start.png") no-repeat top left;
 }
 
 .table_cell_actions .move_up {
-	background: url(/images/up.png) no-repeat left top;
+  background: url("/images/up.png") no-repeat left top;
 }
 
 .table_cell_actions .move_down {
-	background: url(/images/down.png) no-repeat left top;
+  background: url("/images/down.png") no-repeat left top;
 }
 
 .table_cell_actions .managed {
-	background: url(/images/manage_active.png) no-repeat top left;
+  background: url("/images/manage_active.png") no-repeat top left;
 }
 
 .table_cell_actions .unmanaged {
-	background: url(/images/manage.png) no-repeat top left;
+  background: url("/images/manage.png") no-repeat top left;
 }
 
 .table_cell_actions .force_recheck {
-	background: url(/images/recheck.png) no-repeat top left;
+  background: url("/images/recheck.png") no-repeat top left;
 }
 
 .table_cell_actions .delete {
-	background: url(/images/remove.png) no-repeat left top;
+  background: url("/images/remove.png") no-repeat left top;
 }
 
-.delete-options .rm_cancel {
-	background: url(/images/cancel.png) no-repeat left top;
+.delete_actions,
+.main_actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transition: visibility linear 300ms, opacity 300ms ease-in-out;
+  visibility: visible;
+  opacity: 1;
+  border: 1px solid transparent;
+  text-align: right;
 }
 
-.delete-options .rm_torrent_data {
-	background: url(/images/trash.png) no-repeat left top;
+.delete_actions.hidden,
+.main_actions.hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition-delay: 0s;
 }
 
-.delete-options .rm_torrent {
-	background: url(/images/torrent_file.png) no-repeat left top;
+.action_button.state {
+  display: none;
 }
 
+.delete_actions .action_button,
+.main_actions .action_button {
+  float: right;
+  margin-right: 2px;
+  width: 16px;
+  height: 16px;
+}
+
+.filter_option,
+.sort_option {
+  margin: 1px 0;
+  line-height: 18px;
+}
+
+.filter_options .filter_option_input,
+.filter_options .filter_option_invert,
+.filter_options .filter_option_invert_label,
+.filter_options .filter_option_label {
+  display: block;
+  float: left;
+  margin: 0;
+  padding: 0;
+  height: 18px;
+  box-sizing: border-box;
+}
+
+.filter_options .filter_option_label {
+  padding-right: 1ex;
+  width: 10%;
+  text-align: right;
+}
+
+.filter_options .filter_option_input {
+  width: 50%;
+}
+
+.filter_options .filter_option_invert {
+  margin: 0 1%;
+}
+
+.progress_bar_text {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 1px solid transparent;
+  text-align: center;
+  text-shadow: 0 0 3px #000000, 0 0 3px #000000, 0 0 3px #000000;
+  line-height: 16px;
+  color: #ffffff;
+  font-size: 10px;
+}
+
+.info_row {
+  position: relative;
+  margin: 2px 0;
+}
+
+.info_row:first-child {
+  margin-top: 0;
+}
+
+.info_row:last-child {
+  margin-bottom: 0;
+}
+
+.info_row.heading {
+  display: flex;
+}
+
+.info_row.details {
+  display: flex;
+  flex-direction: row;
+}
+
+.info_row.details .details_item {
+  flex: 1 1;
+  flex-basis: auto;
+  text-align: center;
+  font-size: 10px;
+}
+
+.info_row.details .details_item.table_cell_size {
+  text-align: left;
+}
+
+.info_row.details .details_item.table_cell_speed {
+  text-align: right;
+}
+
+.table_cell_position {
+  padding-right: 0.5ex;
+  width: auto;
+}
+
+.table_cell_position:empty {
+  display: none;
+}
+
+.progress_bar_outer {
+  position: relative;
+  background: #aaaaaa;
+  width: 100%;
+}
+
+.progress_bar_outer .progress_bar_inner {
+  border-width: 1px;
+  border-right-width: 0;
+  border-style: solid;
+  width: 0;
+  height: 18px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.progress_bar_outer .progress_bar_inner.Queued {
+  border-color: #aca712;
+  background: linear-gradient(to bottom, #d9d300 50%, #bfba14 50%, #d9d300);
+}
+
+.progress_bar_outer .progress_bar_inner.Paused {
+  border-color: #8b8b8b;
+  background: linear-gradient(to bottom, #c0c0c0 50%, #999999 50%, #c0c0c0);
+}
+
+.progress_bar_outer .progress_bar_inner.Downloading {
+  border-color: #29ad35;
+  background: linear-gradient(to bottom, #45e25d 50%, #3ec953 50%, #45e25d);
+}
+
+.progress_bar_outer .progress_bar_inner.Seeding {
+  border-color: #8b8b8b;
+  background: linear-gradient(to bottom, #a7bfca 50%, #80a3b2 50%, #a7bfca);
+}
+
+.progress_bar_outer .progress_bar_inner.Checking {
+  border-color: #8b8b8b;
+  background: linear-gradient(to bottom, #aaaaaa 50%, #999999 50%, #aaaaaa);
+}
+
+.progress_bar_outer .progress_bar_inner.Error {
+  border-color: #ff0000;
+  background: linear-gradient(to bottom, #cc0000 50%, #8b0000 50%, #cc0000);
+}
+
+.progress_bar_outer .progress_bar_inner.finished {
+  border-right-width: 1px;
+}
+
+.delete_actions .rm_cancel {
+  background: url("/images/cancel.png") no-repeat left top;
+}
+
+.delete_actions .rm_torrent {
+  background: url("/images/torrent_file.png") no-repeat left top;
+}
+
+.delete_actions .rm_torrent_data {
+  background: url("/images/trash.png") no-repeat left top;
+}

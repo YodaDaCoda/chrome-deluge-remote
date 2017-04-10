@@ -1,74 +1,163 @@
 <!DOCTYPE HTML>
 <html>
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8">
-		<title>Deluge Remote for Chrome</title>
-		<link rel="stylesheet" href="css/buttons.css" type="text/css" media="screen" />
-		<link rel="stylesheet" href="css/master.css" type="text/css" media="screen" />
-		<link rel="stylesheet" href="css/popup.css" type="text/css" media="screen" />
-		<script src="js/libs/jquery-3.0.0.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/global_options.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/deluge.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/torrent.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/timer.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/torrents.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/debug_log.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/popup.js" type="text/javascript" charset="utf-8"></script>
-	</head>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Deluge Remote for Chrome</title>
 
-	<body>
+    <!-- jQuery -->
+    <script src="libs/jquery/3.1.1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 
-		<div id="overlay">
-			<div class="overlay_inner">
-				<span class="error">&nbsp;</span>
-			</div>
-		</div>
+    <!-- jQuery Migrate -->
+    <script src="libs/jquery-migrate/3.0.0/jquery-migrate.min.js" type="text/javascript" charset="utf-8"></script>
 
-		<div id="add-torrent-dialog" class="dialog">
-			<div class="inner">
-				<div class="header"><span>Add Torrent</span> <a href="#close" class="close"><span>Close</span></a></div>
-				<div class="body">
-					<p>Please enter URL or Magnet link and click add.</p>
-					<input type="text" id="manual_add_input" placeholder="http://"	/>
-					<p><button class="clean-gray" id="manual_add_button">Add</button></p>
-				</div>
-			</div>
-		</div>
+    <!-- jQueryUI -->
+    <script src="libs/jquery-ui/1.12.1/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="libs/jquery-ui/1.12.1/jquery-ui.min.css" type="text/css" />
 
-		<a id="deluge_webui_link" target="_blank"><div id="logo"><img src="/images/icons/16.png" alt="Deluge logo small" /><span>Deluge</span></div></a>
+    <!-- Our styles -->
+    <link rel="stylesheet" href="css/fonts/open-sans/v13/open-sans.css" type="text/css" />
+    <link rel="stylesheet" href="css/master.css" type="text/css" />
+    <link rel="stylesheet" href="css/popup.css" type="text/css" />
 
-		<a href="#add-torrent" id="add-torrent" title="Add Torrent"><span>Add Torrent</span></a>
+    <!-- Our scripts -->
+    <script src="js/debug_log.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/ExtensionConfig.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/deluge.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/torrent.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/timer.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/torrents.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/popup.js" type="text/javascript" charset="utf-8"></script>
+  </head>
 
-		<div id="global-information">
-			<span class="all-label">Total torrents</span>: <span class="data all">0</span>
-			<span class="downloading-label">Downloading</span>: <span class="data downloading">0</span>
-			<span class="seeding-label">Seeding</span>: <span class="data seeding">0</span>
-			<span class="paused-label">Paused</span>: <span class="data paused">0</span>
-			<span class="queued-label">Queued</span>: <span class="data queued">0</span>
-		</div>
+  <body>
 
-		<div style="clear: both;"></div>
+    <div id="overlay">
+      <div class="overlay_inner">
+        <span class="error">&nbsp;</span>
+      </div>
+    </div>
 
-		<div id="filters">
-			<span>Sort:</span>
-				<select id="sort">
-					<option value="name">Name</option>
-					<option value="size">Size</option>
-					<option value="progress">Progress %</option>
-					<option value="speed">Speed</option>
-					<option value="eta">ETA</option>
-					<option value="position">Position</option>
-				</select>
-				<input type="checkbox" id="sort_invert" /><label for="sort_invert">Invert</label>
-			<br>
-			<span>State:</span>
-				<select id="filter_state"></select>
-			<span>Tracker:</span>
-				<select id="filter_tracker_host"></select>
-			<span>Label:</span>
-				<select id="filter_label"></select>
-		</div>
-		<div id="torrent_container"></div>
+    <div id="add-torrent-dialog" class="dialog">
+      <div class="inner">
+        <div class="header"><span>Add Torrent</span> <a href="#close" class="close"></a></div>
+        <div class="body">
+          <p>Please enter URL or Magnet link and click add.</p>
+          <input type="text" id="manual_add_input" placeholder="http://"  />
+          <p><button class="clean-gray" id="manual_add_button">Add</button></p>
+        </div>
+      </div>
+    </div>
 
-	</body>
+    <div class="popup_heading">
+      <a id="deluge_webui_link" target="_blank">
+        <div id="logo">
+          <img src="/images/icons/64.png" alt="Deluge logo small" class="logo-small"/>
+          <span>Deluge</span>
+        </div>
+      </a>
+
+      <a href="#add-torrent" id="add-torrent" title="Add Torrent"><span>Add Torrent</span></a>
+
+      <div id="global-information">
+        <span class="all-label" data-i18n="global_info_total"></span>: <span class="data all">0</span>
+        <span class="downloading-label" data-i18n="global_info_downloading"></span>: <span class="data downloading">0</span>
+        <span class="seeding-label" data-i18n="global_info_seeding"></span>: <span class="data seeding">0</span>
+        <span class="paused-label" data-i18n="global_info_paused"></span>: <span class="data paused">0</span>
+        <span class="queued-label" data-i18n="global_info_queued"></span>: <span class="data queued">0</span>
+      </div>
+    </div>
+
+    <div id="filters">
+      <div class="twistie twistie_left" title="Show/hide filters and sorting options"></div>
+      <div class="twistie_sub filter_options">
+        <div class="sort_option">
+          <label for="sort_column" class="filter_option_label" data-i18n="filter_option_label_sort_column"></label>
+          <select id="sort_column" class="filter_option_input">
+            <option value="name" data-i18n="sort_column_option_name"></option>
+            <option value="total_size" data-i18n="sort_column_option_total_size"></option>
+            <option value="progress" data-i18n="sort_column_option_progress"></option>
+            <option value="upload_payload_rate" data-i18n="sort_column_option_upload_payload_rate"></option>
+            <option value="download_payload_rate" data-i18n="sort_column_option_download_payload_rate"></option>
+            <option value="eta" data-i18n="sort_column_option_eta"></option>
+            <option value="queue" data-i18n="sort_column_option_queue"></option>
+          </select>
+          <input type="checkbox" id="sort_invert" class="filter_option_invert"/><label for="sort_invert" class="filter_option_invert_label" data-i18n="filter_option_label_invert"></label>
+        </div>
+        <div class="filter_option">
+          <label for="filter_state" class="filter_option_label" data-i18n="filter_option_label_state"></label>
+          <select id="filter_state" class="filter_option_input" data-filter-option-name="state"></select>
+          <input type="checkbox" id="filter_state_invert" class="filter_option_invert"/><label for="filter_state_invert" class="filter_option_invert_label" data-i18n="filter_option_label_invert"></label>
+        </div>
+        <div class="filter_option">
+          <label for="filter_tracker_host" class="filter_option_label" data-i18n="filter_option_label_tracker"></label>
+          <select id="filter_tracker_host" class="filter_option_input" data-filter-option-name="tracker_host"></select>
+          <input type="checkbox" id="filter_tracker_host_invert" class="filter_option_invert"/><label for="filter_tracker_host_invert" class="filter_option_invert_label" data-i18n="filter_option_label_invert"></label>
+        </div>
+        <div class="filter_option">
+          <label for="filter_label" class="filter_option_label" data-i18n="filter_option_label_label"></label>
+          <select id="filter_label" class="filter_option_input" data-filter-option-name="label"></select>
+          <input type="checkbox" id="filter_label_invert" class="filter_option_invert"/><label for="filter_label_invert" class="filter_option_invert_label" data-i18n="filter_option_label_invert"></label>
+    </div>
+      </div>
+    </div>
+
+    <div id="torrent_container">
+      <div class="no_torrents">
+        <p data-i18n="message_torrents_loading"></p>
+      </div>
+    </div>
+
+    <template id="no_torrents_queue">
+      <div class="no_torrents">
+        <p  data-i18n="message_torrents_none_queue"></p>
+      </div>
+    </template>
+
+    <template id="no_torrents_filter">
+      <div class="no_torrents">
+        <p  data-i18n="message_torrents_none_filter"></p>
+      </div>
+    </template>
+
+    <template id="torrent_row">
+      <div class="torrent_row">
+        <div class="info_row heading">
+            <div class="table_cell_position"></div>
+            <div class="table_cell_name"></div>
+        </div>
+        <div class="info_row details">
+          <div class="details_item table_cell_size"></div>
+          <div class="details_item table_cell_eta"></div>
+          <div class="details_item table_cell_ratio"></div>
+          <div class="details_item table_cell_peers"></div>
+          <div class="details_item table_cell_seeds"></div>
+          <div class="details_item table_cell_speed"></div>
+        </div>
+        <div class="info_row progress_bar">
+          <div class="progress_bar_outer">
+            <div class="progress_bar_inner"></div>
+            <div class="progress_bar_text"></div>
+          </div>
+          <div class="table_cell_actions">
+            <div class="main_actions">
+              <div class="action_button delete" title="Delete Options"></div>
+              <div class="action_button force_recheck" data-deluge-method="core.force_recheck" title="Force re-check data"></div>
+              <div class="action_button toggle_managed" data-deluge-method="core.set_torrent_auto_managed" title="Toggle Auto-managed State"></div>
+              <div class="action_button move_down" data-deluge-method="core.queue_down" title="Move Torrent Down"></div>
+              <div class="action_button move_up" data-deluge-method="core.queue_up" title="Move Torrent Up"></div>
+              <div class="action_button state resume" data-deluge-method="core.resume_torrent" title="Pause/Resume Torrent"></div>
+              <div class="action_button state pause" data-deluge-method="core.pause_torrent" title="Pause/Resume Torrent"></div>
+            </div>
+            <div class="delete_actions hidden">
+              <a class="rm_cancel" title="Cancel"></a>
+              <a class="rm_torrent rm_torrent_data" data-deluge-method="core.remove_torrent" title="Delete with data"></a>
+              <a class="rm_torrent" data-deluge-method="core.remove_torrent" title="Remove torrent only">
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+  </body>
 </html>

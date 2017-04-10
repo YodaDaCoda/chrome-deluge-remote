@@ -1,3 +1,6 @@
+/* eslint-env es6 */
+/* global chrome Torrents Timer debug_log ExtensionConfig */
+
 /*
  * Responsible for all display, page or functional control on the status page.
  *
@@ -5,453 +8,514 @@
  * - Rendering HTML for table.
  * - Logic for action buttons.
  */
-$(function() {
-	// Get extension background page for use within the code.
-	var backgroundPage = chrome.extension.getBackgroundPage();
-		// Store the extension activation state.
-	var extensionActivated = false;
-	var checked = [];
-		// Set the initial height for the overlay.
-	var $overlay = $("#overlay").css({ height: $(document).height() });
+jQuery(function ($) {
+  // Get extension background page for use within the code.
+  var backgroundPage = chrome.extension.getBackgroundPage().getBackground();
+  // Store the extension activation state.
+  var extensionActivated = false;
+  // var checked = [];
+  // Set the initial height for the overlay.
+  var $overlay = $('#overlay'); // .css({'height': $(document).height()});
 
-	// Setup timer information.
-	const REFRESH_INTERVAL = 30000;
-	var refreshTimer = Timer(REFRESH_INTERVAL);
+  var torrents = new Torrents();
 
-	// I can't get the popup to play nicely when there is a scroll bar and then
-	// when there isn't - so going to adjust the width if a scroll bar is
-	// visible (this needs to be done on timeout to give popup time to show).
-	//
-	// See: http://code.google.com/p/chromium/issues/detail?id=31494
-	//
-	// Listen for a table refresh event and add the class if needed.
-	/*$(document).bind('table_updated', function (e) {
-		if ($(document).height() > $(window).height()) {
-			$('body').addClass('scrollbars');
-		}
-	});*/
+  // Setup timer information.
+  var REFRESH_INTERVAL = 30000;
+  var refreshTimer = new Timer(REFRESH_INTERVAL);
 
-	/*
-	 * Helper function for creating progress bar element.
-	 */
-	function progressBar(torrent) {
-		var $bar = $(document.createElement("div")).addClass("progress_bar");
-		$(document.createElement("div"))
-			.addClass("inner")
-			.addClass(torrent.state)
-			.addClass((torrent.is_finished ? "finished" : ""))
-			.css("width", torrent.getPercent())
-			.appendTo($bar);
+  function translate() {
+    debug_log('translating');
+    $('[data-i18n]').each(function () {
+      var $this = $(this);
+      debug_log('translating: ' + $this.data('i18n') + ': ' + chrome.i18n.getMessage($this.data('i18n')));
+      $this.text(chrome.i18n.getMessage($this.data('i18n')));
+    });
+  }
 
-		$(document.createElement("span"))
-			.html(torrent.getPercent() + " - " + torrent.state)
-			.appendTo($bar);
+  function load_config() {
+    debug_log('Loading settings');
+    debug_log(ExtensionConfig);
 
-		return $bar;
-	}
+    $('.filter_option_input').each(function () {
+      var $this = $(this);
+      debug_log($this.prop('id') + ': ' + ExtensionConfig[$this.prop('id')]);
+      $this.val(ExtensionConfig[$this.prop('id')] || 'All');
+    });
+    $('#sort_column').val(ExtensionConfig.sort_column || 'position');
 
-	function actionLinks(torrent) {
-		// Work out which states to use based on torrent information.
-		var state = torrent.state === "Paused" ? "resume" : "pause"
-		var managed = torrent.autoManaged ? "managed" : "unmanaged";
+    $('.filter_option_invert').each(function () {
+      var $this = $(this);
+      $this.prop('checked', ExtensionConfig[$this.prop('id')] || false);
+    });
+  }
 
-		return $(document.createElement("div"))
-			.addClass("main_actions")
-			.append(
-				// Pause/Resume buttons.
-				$(document.createElement("a")).addClass("state").addClass(state).prop("title", "Pause/Resume Torrent"),
-				// Move up button.
-				$(document.createElement("a")).addClass("move_up").prop("title", "Move Torrent Up"),
-				$(document.createElement("a")).addClass("move_down").prop("title", "Move Torrent Down"),
-				// Auto managed options.
-				$(document.createElement("a")).addClass("toggle_managed").addClass(managed).prop("title", "Toggle Auto-managed State"),
-				$(document.createElement("a")).addClass("force_recheck").prop("title", "Force re-check data"),
-				// Delete.
-				$(document.createElement("a")).addClass("delete").prop("title", "Delete Options")
-			);
-	}
+  function renderTable() {
 
-	function updateTableDelay(ms) {
-		setTimeout(updateTable, ms);
-	}
+    var torrents_temp;
 
-	function updateTable() {
-		// Clear out any existing timers.
-		refreshTimer.unsubscribe();
-		Torrents.update()
-			.success(function () {
-				renderTable();
-				renderGlobalInformation();
-				refreshTimer.subscribe(updateTable);
-			})
-			.error(function () {
-				// Problem fetching information, perform a status check.
-				// Note: Not setting a timeout, should happen once updateTable
-				// gets called when extension check is OK.
-				checkStatus();
-			});
-	}
+    var $torrent_row;
 
-	/**
-	 * Pause the table refresh.
-	 */
-	function pauseTableRefresh() {
-		refreshTimer.unsubscribe();
-	}
+    var $filters = $('.filter_option');
 
-	 /**
-	* Resume the table refresh.
-	*/
-	function resumeTableRefresh() {
-		refreshTimer.unsubscribe();
-		refreshTimer.subscribe(updateTable);
-	}
+    var torrent_row_properties_map = [
+      {
+        name   : '.table_cell_position',
+        result : function (t, e) {
+          e.text(t.position);
+        },
+      },
+      {
+        name   : '.table_cell_name',
+        result : function (t, e) {
+          e.text(t.data.name);
+        },
+      },
+      {
+        name   : '.table_cell_size',
+        result : function (t, e) {
+          e.text(
+            (t.progress !== 100 ? t.human_downloaded_size + ' of ' : '') + t.human_size
+          );
+        },
+      },
+      {
+        name   : '.table_cell_eta',
+        result : function (t, e) {
+          e.text(
+            'ETA: ' + t.eta
+          );
+        },
+      },
+      {
+        name   : '.table_cell_ratio',
+        result : function (t, e) {
+          e.text(
+            'Ratio: ' + t.ratio
+          );
+        },
+      },
+      {
+        name   : '.table_cell_peers',
+        result : function (t, e) {
+          e.text(
+            'Peers: ' + t.data.num_peers + '/' + t.data.total_peers
+          );
+        },
+      },
+      {
+        name   : '.table_cell_seeds',
+        result : function (t, e) {
+          e.text(
+            'Seeds: ' + t.data.num_seeds + '/' + t.data.total_seeds
+          );
+        },
+      },
+      {
+        name   : '.table_cell_speed',
+        result : function (t, e) {
+          e.text(
+            t.speeds
+          );
+        },
+      },
+      {
+        name   : '.progress_bar_inner',
+        result : function (t, e) {
+          e
+          .addClass(t.data.state)
+          .addClass((t.data.is_finished ? 'finished' : ''))
+          .css('width', t.percent);
+        },
+      },
+      {
+        name   : '.progress_bar_text',
+        result : function (t, e) {
+          e.text(
+            t.percent + ' - ' + t.data.state
+          );
+        },
+      },
+      {
+        name   : '.table_cell_actions .toggle_managed',
+        result : function (t, e) {
+          e.addClass(t.data.is_auto_managed ? 'managed' : 'unmanaged');
+        },
+      },
+    ];
 
-	function renderGlobalInformation() {
-		var information = Torrents.getGlobalInformation();
-		$globalInformation = $("#global-information");
+    load_config();
 
-		debug_log(Torrents);
-		debug_log(information);
+    // Set the href for the title, because otherwise the options doesn't exist early enough
+    $('#deluge_webui_link').attr('href', ExtensionConfig.get_deluge_endpoint());
 
-		$(".all", $globalInformation).html(information.all);
-		$(".downloading", $globalInformation).html(information.downloading);
-		$(".paused", $globalInformation).html(information.paused);
-		$(".seeding", $globalInformation).html(information.seeding);
-		$(".queued", $globalInformation).html(information.queued);
-	}
+    // clear the table
+    $('#torrent_container').empty();
 
-	function renderTable() {
+    // sort the torrents
+    torrents_temp = torrents.sort(ExtensionConfig.sort_column, ExtensionConfig.sort_invert).all;
 
-		//Set the href for the title, because otherwise the options doesn't exist early enough
-		$("#deluge_webui_link").attr("href", Deluge.endpoint());
+    debug_log(`${torrents_temp.length} torrents received`);
+    debug_log(torrents_temp);
 
-		//clear the table
-		$("#torrent_container").empty();
+    if (torrents_temp.length === 0) {
+      $('#torrent_container').append(
+        document.getElementById('no_torrents_queue').content.cloneNode(true)
+      );
+      translate();
 
-		//sort the torrents - the extra sorts help to group things nicely
-		var torrents = Torrents.sort(localStorage.sortColumn || "position").getAll();
-		if (localStorage.sortMethod === "desc") {
-			torrents.reverse();
-		}
+    }
 
-		for (var i = 0; i < torrents.length ; i++) {
-			var torrent = torrents[i];
+    // Filter the torrents
+    debug_log('Filtering...');
+    debug_log($filters);
+    for (let i = 0; i < $filters.length; i++) {
+      torrents_temp = torrents_temp.filter(function (element) {
+        var $filter = $filters.eq(i);
+        var filter_invert = $filter.find('.filter_option_invert').prop('checked');
+        var $filter_option = $filter.find('.filter_option_input');
+        var filter_option_name = $filter_option.data('filter-option-name');
+        // var filter_option_val = $filter_option.val();
 
-			var filter_state = $("#filter_state").val();
-			var filter_tracker_host = $("#filter_tracker_host").val();
-			var filter_label = $("#filter_label").val();
+        var filter_option_value = ExtensionConfig[$filter_option.prop('id')];
 
-			if (filter_state == "All" || filter_state == torrent.state || (filter_state == "Active" && (torrent.speedDownload > 0 || torrent.speedUpload > 0)) ) {
-				if (filter_tracker_host == "All" || filter_tracker_host == torrent.tracker_host || (filter_tracker_host == "Error" && (torrent.tracker_status.indexOf("Error") > -1)) ) {
-					if (filter_label == "All" || filter_label == torrent.label) {
+        var test_result;
 
-						$("#torrent_container").append($("<div>")
-							.data({ id: torrent.id }) /* Store torrent id */
-							.addClass("torrent_row")
-							.append(
-								$("<table>").append($("<tr>").append(
-									$("<td>").addClass("table_cell_position").html(torrent.getPosition()),
-									$("<td>").addClass("table_cell_name").html(torrent.name)
-								)),
-								$("<table>").append($("<tr>").append(
-									$("<td>").addClass("table_cell_size").html((torrent.progress != 100 ? torrent.getHumanDownloadedSize() + " of " : "" ) + torrent.getHumanSize()), // 
-									$("<td>").addClass("table_cell_eta").html("ETA: " + torrent.getEta()),
-									$("<td>").addClass("table_cell_ratio").html("Ratio: " + torrent.getRatio()),
-									$("<td>").addClass("table_cell_peers").html("Peers: " + torrent.num_peers + "/" + torrent.total_peers),
-									$("<td>").addClass("table_cell_seeds").html("Seeds: " + torrent.num_seeds + "/" + torrent.total_seeds),
-									//$("<td>").addClass("table_cell_seeds-peers").html("(" + torrent.seeds_peers_ratio.toFixed(1) + ")"), //this doesn't really look good
-									$("<td>").addClass("table_cell_speed").html(torrent.getSpeeds())
-								)),
-								$("<table>").append($("<tr>").append(
-									$("<td>").addClass("table_cell_progress").html(progressBar(torrent))
-								)),
-								$("<table>").append($("<tr>").append(
-									$("<td>").addClass("table_cell_actions").append(actionLinks(torrent))
-								))
-							)
-						);
+        if (filter_option_value === 'All') {
+          return true; // don't invert the 'All' option, because the opposite of everything is nothing, and that's useless
+        }
 
-					}
-				}
-			}
+        debug_log(`Filtering based on ${filter_option_name}: ${filter_option_value}`);
 
-		}
+        if (filter_option_name === 'state' && filter_option_value === 'Active') {
+          test_result = (element.speedDownload > 0 || element.speedUpload > 0);
+        } else {
+          test_result = element.data[filter_option_name] === filter_option_value;
+        }
 
-		//$(document).trigger('table_updated');
-	}
+        return test_result !== filter_invert;
+      });
+    }
 
-	(function () {
-		function getRowData(element) {
-			var parent = $(element).parents(".torrent_row");
-			var torrentId = parent.data("id");
-			var torrent = Torrents.getById(torrentId);
-			return {"torrentId": torrentId, "torrent": torrent};
-		}
+    debug_log(`Filtered torrents. ${torrents_temp.length} remain.`);
+    debug_log(torrents_temp);
 
-		var $mainActions = $(".main_actions");
+    if (torrents_temp.length === 0) {
+      $('#torrent_container').append(
+        document.getElementById('no_torrents_filter').content.cloneNode(true)
+      );
+      translate();
 
-		function DelugeMethod(method, torrent, rmdata) {
-			pauseTableRefresh();
-			var methods_messages = {
-				"core.resume_torrent":				{success: "Deluge: Resumed torrent",			failure: "Deluge: Failed to resume torrent."},
-				"core.pause_torrent":				{success: "Deluge: Paused torrent",				failure: "Deluge: Failed to pause torrent."},
-				"core.queue_up":					{success: "Deluge: Moved torrent up queue",		failure: "Deluge: Failed to move torrent up queue."},
-				"core.queue_down":					{success: "Deluge: Moved torrent down queue",	failure: "Deluge: Failed to move torrent down queue."},
-				"core.set_torrent_auto_managed":	{success: "Deluge: Toggled auto-managed.",		failure: "Deluge: Failed to toggle auto-managed."},
-				"core.remove_torrent":				{success: "Deluge: Deleted torrent.",			failure: "Deluge: Failed to delete torrent."},
-				"core.force_recheck":				{success: "Deluge: Force rechecking torrent.",	failure: "Deluge: Failed to force recheck torrent."}
-			};
+    }
 
-			var actions;
-			if (method == "core.set_torrent_auto_managed") {	//auto-managed toggle has different call format
-				actions = [torrent.id, !torrent.autoManaged];
-			} else if (method == "core.remove_torrent") {		//remove torrent - if rmdata is true, data is removed as well
-				actions = [torrent.id, rmdata];
-			} else {
-				actions = [[torrent.id]];
-			}
+    for (let i = 0; i < torrents_temp.length; i++) {
 
-			Deluge.api(method, actions)
-				.success(function (data, textStatus, jqXHR) {
-					debug_log(methods_messages[method].success);
-					updateTableDelay(250);
-				})
-				.error(function () {
-					debug_log(methods_messages[method].failure);
-				});
-		}
+      $torrent_row = $(document.getElementById('torrent_row').content.cloneNode(true));
 
-		$("#torrent_container").on("click", ".main_actions *", function() {
-			var rowData = getRowData(this);
-			var method;
-			var rmdata = false;
-			if ($(this).hasClass("state")) {
-				method = rowData.torrent.state === "Paused" ? "core.resume_torrent" : "core.pause_torrent";
-			} else if ($(this).hasClass("move_up")) {
-				method = "core.queue_up";
-			} else if ($(this).hasClass("move_down")) {
-				method = "core.queue_down";
-			} else if ($(this).hasClass("toggle_managed")) {
-				method = "core.set_torrent_auto_managed";
-			} else if ($(this).hasClass("force_recheck")) {
-				method = "core.force_recheck";
-			} else if ($(this).hasClass("rm_torrent_data")) {
-				method = "core.remove_torrent";
-				rmdata = true;
-			} else if ($(this).hasClass("rm_torrent")) {
-				method = "core.remove_torrent";
-				rmdata = false;
-			} else {
-				return;
-			}
-			DelugeMethod(method, rowData.torrent, rmdata);
-		});
+      $torrent_row
+      .find('.torrent_row')
+        .data('id', torrents_temp[i].id)
+        .addClass(torrents_temp[i].data.state);
 
-		$("#torrent_container").on("click", ".main_actions .delete", function() {
-			pauseTableRefresh();
+      for (let j = 0; j < torrent_row_properties_map.length; j++) {
+        torrent_row_properties_map[j].result(torrents_temp[i], $torrent_row.find(torrent_row_properties_map[j].name));
+      }
 
-			$(".main_actions", $(this).parents("td")).fadeOut(function() {
-				$(this).parents("td").append(
-					$("<div>")
-						.addClass("delete-options")
-						.append($("<a>").addClass("rm_cancel").prop("title", "Cancel"))
-						.append($("<a>").addClass("rm_torrent_data").prop("title", "Delete with data"))
-						.append($("<a>").addClass("rm_torrent").prop("title", "Remove torrent only"))
-				).hide().fadeIn();
-			});
+      $('#torrent_container').append(
+        $torrent_row
+      );
 
-		});
+    }
 
-		$("#torrent_container").on("click", ".delete-options a", function() {
-			var action = $(this).attr("rel") || "cancel";
-			var delData = (action === "data") ? true : false;
-			var torrent = getRowData(this).torrent;
+  }
 
-			function removeButtons() {
-				// Remove buttons, resume refresh.
-				$(".delete-options").fadeOut(function () {
-					resumeTableRefresh();
-					$(".main_actions", $(this).parents("td")).fadeIn(function() {
-						updateTable();
-					});
-				});
-			}
+  function renderGlobalInformation() {
+    var information = torrents.globalInformation;
+    var $globalInformation = $('#global-information');
 
-			// If cancelling remove overlay and resume refresh now and return.
-			if ($(this).hasClass("rm_cancel")) {
-				//removeButtons();
-			} else if ($(this).hasClass("rm_torrent")) {
-				DelugeMethod("core.remove_torrent", torrent, false);
-			} else if ($(this).hasClass("rm_torrent_data")) {
-				DelugeMethod("core.remove_torrent", torrent, true);
-			} else {
-				return false;
-			}
+    debug_log(torrents);
+    debug_log(information);
 
-			removeButtons();
-			return false;
+    $globalInformation.find('.all').text(information.all);
+    $globalInformation.find('.paused').text(information.paused);
+    $globalInformation.find('.seeding').text(information.seeding);
+    $globalInformation.find('.queued').text(information.queued);
+  }
 
-		});
+  /*
+   * Check the status of the extension and do the handling for the popup.
+   *
+   * This function only displays error messages, it's the job of the
+   * background page to inform us the error has been resolved so we can update
+   * the table.
+   */
+  function checkStatus() {
+    backgroundPage
+    .checkStatus({timeout: 10000})
+    .success(function (response) {
+      debug_log('status check: success');
+      debug_log('response: ');
+      debug_log(response);
+      if (response === true) {
+        // load torrents?
+      }
+      if (response === false) {
+        // Most likely still waiting on daemon to start.
+        $overlay.find('span').addClass('error').html(
+          chrome.i18n.getMessage('error_daemon_not_running')
+        );
+        $overlay.show();
+      }
+    })
+    .error(function (jqXHR, text, err) {
+      /*
+       * Ignore any unauthenticated errors here - they are normally
+       * resolved by an auto login in the background stuff and is normally
+       * sorted before this message can be fully displayed.
+       *
+       * We will instead receive errors from the global event for auto
+       * login failure to display the message to the user - see
+       * autoLoginFailed and Chrome extension addListner.
+       */
+      if (err.code !== 1) { // API_AUTH_CODE = 1
+        $overlay.find('span').addClass('error').html(
+          chrome.i18n.getMessage('error_generic')
+        );
+        $overlay.show();
+      }
+    });
+  }
 
-	}());
+  function updateTable() {
+    // Clear out any existing timers.
+    refreshTimer.unsubscribe();
+    torrents.update()
+    .success(function () {
+      renderTable();
+      renderGlobalInformation();
+      refreshTimer.subscribe(updateTable);
+    })
+    .error(function () {
+      // Problem fetching information, perform a status check.
+      // Note: Not setting a timeout, should happen once updateTable
+      // gets called when extension check is OK.
+      checkStatus();
+    });
+  }
+  function updateTableDelay(ms) {
+    setTimeout(updateTable, ms);
+  }
 
-	(function () {
-		$("#add-torrent").click(function(e) {
-			e.preventDefault();
-			$("#add-torrent-dialog").show();
-			$("#add-torrent-dialog").click(function(e) {
-				$(this).hide();
-			});
 
-			/* Don't closed if clicked within .inner */
-			$("#add-torrent-dialog .inner").click(function(e) {
-				e.stopPropagation();
-			});
-		});
-		// For some reason the link has focus when the status is shown, however
-		// we can't blur straight away, wait 50ms then do it.
-		setTimeout(function() { $("#add-torrent").blur(); }, "50");
+  /**
+   * Pause the table refresh.
+   */
+  function pauseTableRefresh() {
+    refreshTimer.unsubscribe();
+  }
 
-		$("#add-torrent-dialog .close").click(function(e) {
-			e.preventDefault();
-			$("#add-torrent-dialog").hide()
-		});
+   /**
+  * Resume the table refresh.
+  */
+  function resumeTableRefresh() {
+    refreshTimer.unsubscribe();
+    refreshTimer.subscribe(updateTable);
+  }
 
-		var $inputBox = $("#manual_add_input")
-			, $addButton = $("#manual_add_button");
+  function getRowData(element) {
+    var $parent = $(element).parents('.torrent_row');
+    var torrentId = $parent.data('id');
+    var torrent = torrents.getById(torrentId);
+    return {torrentId: torrentId, torrent: torrent};
+  }
 
-		$inputBox.keydown(function (event) {
-			if (event.keyCode === "13") {
-				event.preventDefault();
-				$addButton.click();
-			}
-		});
+  // var $mainActions = $('.main_actions');
 
-		$addButton.on("click", function (e) {
-			e.preventDefault();
-			var url = $inputBox.val();
+  function DelugeMethod(method, torrent, rmdata) {
 
-			// Now check that the link contains either .torrent or download, get, etc...
-			if (url.search(/\/(download|get)\//) > 0 || url.search(/\.torrent$/) > 0) {
-				chrome.runtime.sendMessage({ msg: "add_torrent_from_url", url: url},
-					function (response) {
-						if (response.msg === "success") {
-							$inputBox.val("");
-						}
-					});
-			} else if (url.search(/magnet:/) != -1) {
-				chrome.runtime.sendMessage({ msg: "add_torrent_from_magnet", url: url},
-					function (response) {
-						debug_log(response);
-						if (response.msg === "success") {
-							$inputBox.val("");
-						}
-					});
-			}
+    var methodsMessages = {
+      'core.resume_torrent'           : {success: 'Deluge: Resumed torrent',           failure: 'Deluge: Failed to resume torrent.'},
+      'core.pause_torrent'            : {success: 'Deluge: Paused torrent',            failure: 'Deluge: Failed to pause torrent.'},
+      'core.queue_up'                 : {success: 'Deluge: Moved torrent up queue',    failure: 'Deluge: Failed to move torrent up queue.'},
+      'core.queue_down'               : {success: 'Deluge: Moved torrent down queue',  failure: 'Deluge: Failed to move torrent down queue.'},
+      'core.set_torrent_auto_managed' : {success: 'Deluge: Toggled auto-managed.',     failure: 'Deluge: Failed to toggle auto-managed.'},
+      'core.remove_torrent'           : {success: 'Deluge: Deleted torrent.',          failure: 'Deluge: Failed to delete torrent.'},
+      'core.force_recheck'            : {success: 'Deluge: Force rechecking torrent.', failure: 'Deluge: Failed to force recheck torrent.'},
+    };
 
-			$("#add-torrent-dialog").hide();
-		});
-	}());
+    pauseTableRefresh();
 
-	$(function() {
-		$("#sort").val(localStorage.sortColumn || "position");
-		$("#sort_invert").attr("checked", (localStorage.sortMethod == "desc") );
+    torrents.api(method, torrent, rmdata)
+    .success(function () {
+      debug_log(methodsMessages[method].success);
+      updateTableDelay(250);
+    })
+    .error(function () {
+      debug_log(methodsMessages[method].failure);
+    });
+  }
 
-		$("#filter_state").val(localStorage["filter_state"] || "All");
-		$("#filter_tracker_host").val(localStorage["filter_tracker_host"] || "All");
-		$("#filter_label").val(localStorage["filter_label"] || "All");
+  $('#torrent_container').on('click', '.main_actions .delete', function () {
+    var $this = $(this);
+    var $row = $this.closest('.torrent_row');
 
-		$("#sort").on("change", function () {
-			localStorage.sortColumn = $(this).val();
-			renderTable();
-		});
+    pauseTableRefresh();
 
-		$("#sort_invert").on("change", function () {
-			localStorage.sortMethod = ($(this).is(":checked")) ? "desc" : "asc";
-			renderTable();
-		});
+    $row.find('.main_actions').toggleClass('hidden');
+    $row.find('.delete_actions').toggleClass('hidden');
+  });
 
-		$("#filter_state, #filter_tracker_host, #filter_label").on("change", function () {
-			localStorage[$(this).attr("id")] = $(this).val();
-			renderTable();
-		});
+  // For some reason the link has focus when the status is shown, however
+  // we can't blur straight away, wait 50ms then do it.
+  setTimeout(function () { $('#add-torrent').blur(); }, '50');
 
-		
+  $('#add-torrent-dialog .close').click(function (e) {
+    e.preventDefault();
+    $('#add-torrent-dialog').hide();
+  });
 
-	}());
+  $('#manual_add_input')
+  .keydown(function (event) {
+    if (event.keyCode === '13') {
+      event.preventDefault();
+      $('#manual_add_button').click();
+    }
+  });
 
-	/*
-	 * Check the status of the extension and do the handling for the popup.
-	 *
-	 * This function only displays error messages, it's the job of the
-	 * background page to inform us the error has been resolved so we can update
-	 * the table.
-	 */
-	function checkStatus() {
-		backgroundPage.Background.checkStatus({ timeout: 1000 }).success(function (response) {
-			if (response === false) {
-				// Most likely still waiting on daemon to start.
-				$("span", $overlay).removeClass().addClass("error").html(
-					chrome.i18n.getMessage("error_daemon_not_running")
-				);
-				$overlay.show();
-			}
-		}).error(function (jqXHR, text, err) {
-			var message = chrome.i18n.getMessage("error_generic");
-			/*
-			 * Ignore any unauthenticated errors here - they are normally
-			 * resolved by an auto login in the background stuff and is normally
-			 * sorted before this message can be fully displayed.
-			 *
-			 * We will instead receive errors from the global event for auto
-			 * login failure to display the message to the user - see
-			 * autoLoginFailed and Chrome extension addListner.
-			 */
-			if (err.code !== Deluge.API_AUTH_CODE) {
-				$("span", $overlay).removeClass().addClass("error").html(message);
-				$overlay.show();
-			}
-		});
-	}
+  // This function is called when the background page sends an activated
+  // message, this happens roughly every minute so we only want to call
+  // updateTable, or hide any current overlays once. We can let the local
+  // timers within this script handle table updating.
+  function activated() {
+    if (!extensionActivated) {
+      debug_log('Deluge: ACTIVATED');
+      extensionActivated = true;
+      $overlay.hide();
+      updateTable();
+    }
+  }
 
-	// This function is called when the background page sends an activated
-	// message, this happens roughly every minute so we only want to call
-	// updateTable, or hide any current overlays once. We can let the local
-	// timers within this script handle table updating.
-	function activated() {
-		if (!extensionActivated) {
-			debug_log("Deluge: ACTIVATED");
-			extensionActivated = true;
-			$overlay.hide();
-			updateTable();
-		}
-	}
+  function deactivated() {
+    extensionActivated = false;
+  }
 
-	function deactivated() {
-		extensionActivated = false;
-	}
+  function autoLoginFailed() {
+    var message = chrome.i18n.getMessage('error_unauthenticated');
+    $('span', $overlay).addClass('error').html(message);
+    $overlay.show();
+  }
 
-	function autoLoginFailed() {
-		var message = chrome.i18n.getMessage("error_unauthenticated");
-		$("span", $overlay).addClass("error").html(message);
-		$overlay.show();
-	}
+  // Setup listeners for closing message overlays coming from background.
+  chrome.runtime.onMessage.addListener(
+    function (request/* , sender, sendResponse */) {
+      debug_log(request);
+      debug_log(request.method);
+      switch (request.method) {
+        case 'extension_activated':
+          activated();
+          break;
+        case 'extension_deactivated':
+          deactivated();
+          break;
+        case 'auto_login_failed':
+          autoLoginFailed();
+          break;
+        default:
+          break;
+      }
+      // sendResponse({});
+    }
+  );
 
-	// Setup listeners for closing message overlays coming from background.
-	chrome.runtime.onMessage.addListener(
-		function (request, sender, sendResponse) {
-			debug_log(request.msg);
-			if (request.msg === "extension_activated") {
-				activated();
-			} else if (request.msg === "extension_deactivated") {
-				deactivated();
-			} else if (request.msg === "auto_login_failed") {
-				autoLoginFailed();
-			}
-		}
-	);
+  $(document.body)
+  .tooltip()
+  .on('click', '.twistie', function () {
+    $(this).toggleClass('twistie_down');
+  })
+  .on('change', '.filter_option_input,.filter_option_invert', function () {
+    var $this = $(this);
+    ExtensionConfig[$this.prop('id')] = ($this.is('[type="checkbox"],[type="radio"]') ? $this.prop('checked') : $this.val());
+    debug_log('filter/sort change: ' + $this.prop('id'));
+    chrome.storage.sync.set(ExtensionConfig);
+    renderTable();
+  })
+  .on('click', '#add-torrent', function (e) {
+    /* show add torrent dialog */
+    e.preventDefault();
+    $('#add-torrent-dialog').show();
+  })
+  .on('click', '#add-torrent-dialog', function () {
+    /* Closed if clicked outer */
+    $(this).hide();
+  })
+  .on('click', '#add-torrent-dialog .inner', function (e) {
+    /* Don't close if clicked within .inner */
+    e.stopPropagation();
+  })
+  .on('click', '.delete_actions a', function () {
+    var torrent = getRowData(this).torrent;
 
-	// Do initial check.
-	checkStatus();
+    var $this = $(this);
+    var $row = $this.closest('.torrent_row');
+
+    pauseTableRefresh();
+
+    $row.find('.main_actions').toggleClass('hidden');
+    $row.find('.delete_actions').toggleClass('hidden');
+
+    if ($this.hasClass('rm_torrent')) {
+      DelugeMethod('core.remove_torrent', torrent, $this.hasClass('rm_torrent_data'));
+      updateTable();
+      return true;
+    }
+
+    resumeTableRefresh();
+
+    return false;
+
+  })
+  .on('click', '#manual_add_button', function (e) {
+    var url = $('#manual_add_input').val();
+
+    e.preventDefault();
+
+    // Now check that the link contains either .torrent or download, get, etc...
+    if (url.search(/\/(download|get)\//) > 0 || url.search(/\.torrent$/) > 0) {
+      chrome.runtime.sendMessage({method: 'add_torrent_from_url', url: url},
+        function (response) {
+          if (response.msg === 'success') {
+            $('#manual_add_input').val('');
+          }
+        });
+    } else if (url.search(/magnet:/) !== -1) {
+      chrome.runtime.sendMessage({method: 'add_torrent_from_magnet', url: url},
+        function (response) {
+          debug_log(response);
+          if (response.msg === 'success') {
+            $('#manual_add_input').val('');
+          }
+        });
+    }
+
+    $('#add-torrent-dialog').hide();
+  })
+  .on('click', '.main_actions .action_button', function () {
+    var $this = $(this);
+    var rowData = getRowData(this);
+    var method = $this.data('deluge-method');
+    var rmdata = $this.hasClass('rm_torrent_data');
+
+    if ($this.hasClass('delete')) {
+      return;
+    }
+
+    DelugeMethod(method, rowData.torrent, rmdata);
+  });
+
+
+  // Internationalisation
+  translate();
+
+  // Do initial check.
+  checkStatus();
+
 });

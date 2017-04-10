@@ -17,8 +17,87 @@
         "description": "Shown when auto login has failed to connect to Deluge."
     },
 
-     "loading_data": {
-        "message": "Loading data...",
-        "description": "Shown anywhere that has content being loaded."
+     "message_torrents_loading": {
+        "message": "Loading torrents...",
+        "description": "Shown on the popup before torrents are loaded."
+    },
+     "message_torrents_none_queue": {
+        "message": "0 torrents in queue.",
+        "description": "Shown on the popup when there are no torrents in queue."
+    },
+     "message_torrents_none_filter": {
+        "message": "0 torrents in filter.",
+        "description": "Shown on the popup when all torrents are filtered out."
+    },
+
+    "filter_option_label_sort_column": {
+      "message": "Sort:",
+      "description": "Shown on the popup, sort options label."
+    },
+    "sort_column_option_name": {
+       "message": "Name",
+       "description": "Shown on the popup, sort options - torrent name."
+    },
+    "sort_column_option_total_size": {
+       "message": "Size",
+       "description": "Shown on the popup, sort options - torrent total size."
+    },
+    "sort_column_option_progress": {
+       "message": "Progress %",
+       "description": "Shown on the popup, sort options - torrent download progress percent."
+    },
+    "sort_column_option_upload_payload_rate": {
+       "message": "↑Speed",
+       "description": "Shown on the popup, sort options - torrent upload speed."
+    },
+    "sort_column_option_download_payload_rate": {
+       "message": "↓Speed",
+       "description": "Shown on the popup, sort options - torrent download speed."
+    },
+    "sort_column_option_eta": {
+       "message": "ETA",
+       "description": "Shown on the popup, sort options - torrent eta."
+    },
+    "sort_column_option_queue": {
+       "message": "Position",
+       "description": "Shown on the popup, sort options - torrent queue position."
+    },
+
+    "filter_option_label_state": {
+      "message": "State:",
+      "description": "Shown on the popup, filter options - State label."
+    },
+    "filter_option_label_tracker": {
+      "message": "Tracker:",
+      "description": "Shown on the popup, filter options - Tracker label."
+    },
+    "filter_option_label_label": {
+      "message": "Label:",
+      "description": "Shown on the popup, filter options - Label label."
+    },
+    "filter_option_label_invert": {
+      "message": "Invert",
+      "description": "Shown on the popup, for each filter option - Invert label."
+    },
+
+    "global_info_total": {
+      "message": "Total",
+      "description": "Shown on the popup, in the global totals - total torrents."
+    },
+    "global_info_downloading": {
+      "message": "Downloading",
+      "description": "Shown on the popup, in the global totals - downloading torrents."
+    },
+    "global_info_seeding": {
+      "message": "Seeding",
+      "description": "Shown on the popup, in the global totals - seeding torrents."
+    },
+    "global_info_paused": {
+      "message": "Paused",
+      "description": "Shown on the popup, in the global totals - paused torrents."
+    },
+    "global_info_queued": {
+      "message": "Queued",
+      "description": "Shown on the popup, in the global totals - queued torrents."
     }
 }

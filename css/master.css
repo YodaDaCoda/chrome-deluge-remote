@@ -1,174 +1,22 @@
 body {
-	color: #373737;
-	margin: 0;
-	min-height: 200px;
-	width: 780px;
-	overflow-x: hidden;
-}
-a {
-	border-bottom: 1px dotted #BBBBBB;
-	color: #425570;
-	text-decoration: none;
-}
-
-.dialog .inner {
-	margin: 20px auto 0 auto;
-	width: 500px;
-}
-
-.dialog .header {
-	background-image: -webkit-gradient(linear, 0% 18%, 0% 52%, from(#FDFDFD), to(#E9E9E9));
-	background-repeat: no-repeat;
-	background-position: left 2px;
-	border: 0;
-	border-bottom: 1px solid #CCC;
-	padding: 5px;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-	font-weight: bold;
-	font-size: 1.2em;
-	text-shadow: 0 1px 0 white;
-	position: relative;
-}
-
-.dialog .header .close {
-	position: absolute;
-	right: 5px;
-	background: url(/themes/standard/images/close.png?1) no-repeat left top;
-	border: 0;
-	width: 16px;
-	height: 16px;
-}
-
-.dialog .header .close > span {
-	display: none;
-}
-
-.dialog .body {
-	background: white;
-	padding: 5px;
-	border-bottom-left-radius: 5px;
-	border-bottom-right-radius: 5px;
-	overflow: hidden;
-}
-
-#add-torrent-dialog #manual_add_input {
-	width: 99%;
-}
-
-#add-torrent-dialog #manual_add_button {
-	float: right;
-	border: 1px solid #AAA;
-}
-
-#add-torrent {
-	border: 0;
-	background: url(/images/add_torrent.png) no-repeat left top;
-	display: block;
-	float: right;
-	height: 22px;
-	width: 22px;
-	margin: 5px;
-	text-decoration: none;
-}
-
-#add-torrent span {
-	display: none;
+  margin: 0;
+  width: 780px;
+  min-height: 200px;
+  font-family: 'Open Sans', sans-serif;
+  overflow-x: hidden;
 }
 
 #logo {
-	margin: 3px;
+  margin: 3px;
 }
 
 #logo span {
-	font-weight: bold;
-	font-size: 2em;
+  text-decoration: none;
+  color: #425570;
+  font-size: 2em;
+  font-weight: bold;
 }
 
-.table_cell_size {
-	text-align: center;
-}
-
-#table_header_speed {
-	width: 150px;
-}
-
-.table_cell_speed {
-	text-align: center;
-}
-
-#table_header_actions {
-	width: 130px;
-}
-
-.table_cell_actions {
-	text-align: center;
-}
-
-table#torrent_table tbody tr:nth-child(even) {
-	background: #F4F4F4;
-}
-
-table#torrent_table tbody tr td {
-	padding: 5px 3px;
-}
-
-a:hover {
-	color: #000000;
-}
-
-.clr {
-	clear: both;
-}
-
-#mass-buttons {
-	padding: 10px;
-	font-size: 1.1em;
-	color: darkRed;
-	font-weight: bold;
-}
-
-#mass-buttons a {
-	border: 0;
-	cursor: pointer;
-	display: inline-block;
-	height: 16px;
-	margin: 0 1px;
-	width: 16px;
-}
-
-#mass-buttons a.state {
-	background: url(/themes/standard/images/state.png) no-repeat top left;
-}
-
-#mass-buttons a.state.resume {
-	background-position: 0 -66px;
-	width: 16px;
-	height: 16px;
-}
-
-#mass-buttons a.state.pause {
-	background-position: 0 0;
-	width: 16px;
-	height: 16px;
-}
-
-#mass-buttons a.delete {
-	background: url(/themes/standard/images/remove.png) no-repeat left top;
-}
-
-#mass-buttons a.data {
-	background: url(/themes/standard/images/trash.png) no-repeat left top;
-}
-
-#mass-buttons a.torrent {
-	background: url(/themes/standard/images/database.png) no-repeat left top;
-}
-
-.sortable:hover {
-	cursor: pointer;
-}
-
-.sorted {
-	color: darkRed;
+#logo span:hover {
+  color: #000000;
 }

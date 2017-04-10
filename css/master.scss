@@ -1,0 +1,24 @@
+@import 'colors';
+
+body {
+  margin: 0;
+  width: 780px;
+  min-height: 200px;
+  font-family: 'Open Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+#logo {
+  margin: 3px;
+
+  span {
+    text-decoration: none;
+    color: $color-theme-delugeblue;
+    font-size: 2em;
+    font-weight: bold;
+
+    &:hover {
+      color: $color-black;
+    }
+  }
+}

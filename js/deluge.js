@@ -1,73 +1,76 @@
-var Deluge = (function (Deluge, $) {
-	Deluge = Deluge || {};
+/* exported Deluge */
 
-	function endpoint() {
-		return ExtensionConfig.address_protocol + "://" + ExtensionConfig.address_ip + ":" + (ExtensionConfig.address_port != "" ? ExtensionConfig.address_port : "8112") + "/" + (ExtensionConfig.address_base != "" ? ExtensionConfig.address_base+"/" : "");
-	}
+class Deluge {
 
-	// API Error Text Status.
-	Deluge.API_ERROR = 'apierror';
-	Deluge.API_AUTH_CODE = 1;
-	Deluge.API_UNKNOWN_METHOD_CODE = 2;
-	Deluge.API_UNKNOWN_ERROR_CODE = 3;
+  constructor(endpoint) {
+    this.API_ERROR = 'apierror';
+    this.API_AUTH_CODE           = 1;
+    this.API_UNKNOWN_METHOD_CODE = 2;
+    this.API_UNKNOWN_ERROR_CODE  = 3;
 
-	Deluge.endpoint = function() { return endpoint(); };
+    if (typeof endpoint === 'undefined') {
+      throw new Error('Endpoint must be defined upon initialisation');
+    }
+    this._endpoint = endpoint;
+  }
 
-	/*
-	 * Ajax wrapper for making calls to Deluge web API.
-	 *
-	 */
-	Deluge.api = function (method, params, options) {
-		var that = this;
+  get endpoint() {
+    return this._endpoint;
+  }
 
-		var deferred = $.Deferred(function (d) {
-			// Default ajax options.
-			var defaults = {
-				url: endpoint()+"json", //testing, makes it easier to track a given request   +"?rand="+Math.trunc(Math.random()*10000),
-				type: 'POST',
-				dataType: 'json',
-				contentType: 'application/json',
-			};
-				// Extend default with any user passed options.
-			var settings = $.extend({}, defaults, options);
+  /*
+   * Ajax wrapper for making calls to Deluge web API.
+   */
+  api(method, params, options) {
 
-			// Create the API call data.
-			settings.data = JSON.stringify({
-				method: method,
-				params: params || [],
-				id: '-999' /* Not needed for this */
-			});
+    var deferred = jQuery.Deferred((d) => {
+      // Default ajax options.
+      var defaults = {
+        url         : this._endpoint + 'json', // testing, makes it easier to track a given request   +"?rand="+Math.trunc(Math.random()*10000),
+        type        : 'POST',
+        dataType    : 'json',
+        contentType : 'application/json',
+      };
 
-			// Setup callbacks for anything passed into options.
-			d.done(settings.success);
-			d.fail(settings.error);
+      // Extend default with any user passed options.
+      var settings = jQuery.extend({}, defaults, options);
 
-			// Replace the success and error so we can do some generic handling
-			// for the response.
-			settings.success = function (response, textStatus, jqXHR) {
-				if (response.error !== null) {
-					d.rejectWith(this, [jqXHR, that.API_ERROR, response.error]);
-				} else {
-					d.resolveWith(this, [response.result, textStatus, jqXHR]);
-				}
-			};
+      // Create the API call data.
+      settings.data = JSON.stringify({
+        method : method,
+        params : params || [],
+        id     : '-999', /* Not needed for this */
+      });
 
-			settings.error = function (jqXHR, textStatus, errorThrown) {
-				d.rejectWith(this, [jqXHR, textStatus, errorThrown]);
-			};
+      // Setup callbacks for anything passed into options.
+      d.done(settings.success);
+      d.fail(settings.error);
 
-			// Perform ajax call.
-			$.ajax(settings);
-		});
+      // Replace the success and error so we can do some generic handling
+      // for the response.
+      settings.success = function (response, textStatus, jqXHR) {
+        if (response.error !== null) {
+          d.rejectWith(this, [jqXHR, self.API_ERROR, response.error]);
+        } else {
+          d.resolveWith(this, [response.result, textStatus, jqXHR]);
+        }
+      };
 
-		var promise = deferred.promise();
+      settings.error = function (jqXHR, textStatus, errorThrown) {
+        d.rejectWith(this, [jqXHR, textStatus, errorThrown]);
+      };
 
-		// Alias the old names for ajax stuff.
-		promise.success = deferred.done;
-		promise.error = deferred.fail;
+      // Perform ajax call.
+      jQuery.ajax(settings);
+    });
 
-		return promise;
-	};
+    var promise = deferred.promise();
 
-	return Deluge;
-}(Deluge, jQuery));
+    // Alias the old names for ajax stuff.
+    promise.success = deferred.done;
+    promise.error = deferred.fail;
+
+    return promise;
+  }
+
+}

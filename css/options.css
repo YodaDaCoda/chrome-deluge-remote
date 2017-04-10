@@ -1,52 +1,97 @@
+.buttons::after {
+  display: block;
+  clear: both;
+  content: '';
+}
+
 body {
-	width: 100%;
-	color: #000000;
+  width: 100%;
+  color: #000000;
 }
 
 #content {
-	width: 700px;
-	margin-left: auto;
-	margin-right: auto;
-	border: 1px solid #CCC;
-	padding: 5px;
+  margin-right: auto;
+  margin-left: auto;
+  border: 1px solid #cccccc;
+  padding: 5px;
+  max-width: 700px;
 }
+
 #options {
-	width: 600px;
-	margin: 0 auto;
+  margin: 0 auto;
+  width: 600px;
 }
 
 #options fieldset {
-	margin-left: auto;
-	margin-right: auto;
+  margin-right: auto;
+  margin-left: auto;
 }
+
 label span {
-	font-size: 75%;
+  font-size: 75%;
 }
 
 table tr td:nth-child(1) {
-	width: 150px;
-	padding-right: 5px;
-	text-align: right;
+  padding-right: 5px;
+  width: 150px;
+  text-align: right;
 }
 
 .buttons {
-	margin-top: 10px;
-}
-.buttons .left {
-	float: left;
-}
-.buttons .right {
-	float: right;
+  margin-top: 10px;
 }
 
-div#logo span {
-	display:inline-block;
+.buttons .left {
+  float: left;
+}
+
+.buttons .right {
+  float: right;
+}
+
+#logo span {
+  display: inline-block;
+}
+
+.chrome-header a:hover,
+.chrome-sub-header a:hover {
+  color: #ffffff;
+}
+
+.chrome-header {
+  margin: 15px 0 0;
+  border-top: 1px solid #b5c7de;
+  background: #ebeff9;
+  padding: 3px 0 2px 5px;
+  width: 100%;
+}
+
+.chrome-header h2 {
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+}
+
+.chrome-sub-header {
+  margin: 0 0 15px;
+  border-bottom: 1px solid #ebeff9;
+  background: #f4f6fc;
+  padding: 0.8em 0 0.8em 5px;
+  width: 100%;
+}
+
+.chrome-sub-header p:first-child {
+  margin-top: 0;
+}
+
+.chrome-sub-header p:last-child {
+  margin-bottom: 0;
 }
 
 .e1f605 {
-	background: url('https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.2/assets/png/1f605.png');
-	background-size: contain;
-	height: 20px;
-	width: 20px;
-	display:inline-block;
+  display: inline-block;
+  background: url("https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.2/assets/png/1f605.png");
+  background-size: contain;
+  width: 20px;
+  height: 20px;
 }

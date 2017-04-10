@@ -1,154 +1,171 @@
+/* exported Torrents */
+/* global Deluge debug_log Torrent ExtensionConfig */
+
 /*
  * Module responsible for fetching, storing and sorting torrent objects.
  */
-var Torrents = (function ($) {
-	var pub = {};
-		// Stores all torrent data, using array so it can be sorted.
-	var torrents = [];
-	var globalInformation = {};
+class Torrents {
+  constructor() {
+    this._deluge = new Deluge(ExtensionConfig.get_deluge_endpoint());
+    this._pub = {};
+    // Stores all torrent data, using array so it can be sorted.
+    this._torrents = [];
+    this._globalInformation = {};
 
-	pub.getAll = function () {
-		return torrents;
-	};
+    // setup binds until it's handled in js natively
+    this.sort = this.sort.bind(this);
+    this.getById = this.getById.bind(this);
+    this.cleanup = this.cleanup.bind(this);
+    this.update = this.update.bind(this);
+  }
 
-	//Sorts the torrents.
-	// Can sort by name, size, progress, speed, eta, position
-	pub.sort = function(by, invert) {
-		torrents.sortByParameter(by, invert);
-		return this;
-	}
+  get all() {
+    return this._torrents;
+  }
 
-	pub.getById = function (val) {
-		var i;
-		for (i = 0; i < torrents.length; i += 1) {
-			if (torrents[i].id === val) {
-				return torrents[i];
-			}
-		}
-		return false;
-	};
+  get globalInformation() {
+    return this._globalInformation;
+  }
 
-	pub.getGlobalInformation = function () {
-		return globalInformation;
-	};
+  // Sorts the torrents.
+  // Can sort by name, size, progress, speed, eta, position
+  sort(by, invert) {
+    debug_log('Entering...');
+    debug_log(by);
+    debug_log(invert);
+    this._torrents.sortByParameter(by, invert);
+    return this;
+  }
 
-	pub.cleanup = function () {
-		var i;
-		for (i = 0; i < torrents.length; i += 1) {
-			torrents[i] = null;
-		}
-		torrents = null;
-	};
+  getById(val) {
+    for (let i = 0; i < this._torrents.length; i += 1) {
+      if (this._torrents[i].id === val) {
+        return this._torrents[i];
+      }
+    }
+    return false;
+  }
 
-	pub.update = function () {
-		var that = this;
-		var api = Deluge.api("web.update_ui", [[
-				"queue",
-				"name",
-				"total_size",
-				"state",
-				"progress",
-				"download_payload_rate",
-				"upload_payload_rate",
-				"eta",
-				"ratio",
-				"is_auto_managed",
-				"num_seeds",
-				"total_seeds",
-				"num_peers",
-				"total_peers",
-				"seeds_peers_ratio",
-				"is_finished",
-				"is_seed",
-				"active_time",
-				"seeding_time",
-				"time_added",
-				"tracker_host",
-				"tracker_status",
-				"label"
-			],
-				{}
-			],
-				{ timeout: 2000 }
-			)
-			.success(function (response) {
-				var id, tmp;
-				// Reset torrents array.
-				that.cleanup();
-				torrents = [];
-				for (id in response.torrents) {
-					if (response.torrents.hasOwnProperty(id)) {
-						torrents.push(new Torrent(id, response.torrents[id]));
-					}
-				}
+  cleanup() {
+    this._torrents = [];
+  }
 
-				for (id in response.filters.state) {
-					if (response.filters.state.hasOwnProperty(id)) {
-						tmp = response.filters.state[id];
-						globalInformation[tmp[0].toLowerCase()] = tmp[1];
-					}
-				}
+  update() {
+    var that = this;
+    var api = this._deluge.api('web.update_ui', [[
+      'queue',
+      'name',
+      'total_size',
+      'state',
+      'progress',
+      'download_payload_rate',
+      'upload_payload_rate',
+      'eta',
+      'ratio',
+      'is_auto_managed',
+      'num_seeds',
+      'total_seeds',
+      'num_peers',
+      'total_peers',
+      'seeds_peers_ratio',
+      'is_finished',
+      'is_seed',
+      'active_time',
+      'seeding_time',
+      'time_added',
+      'tracker_host',
+      'tracker_status',
+      'label',
+    ],
+    {},
+    ], {
+      timeout: 2000,
+    })
+    .success(function (response) {
+      // Reset torrents array.
+      that.cleanup();
+      for (let id in response.torrents) {
+        if ({}.hasOwnProperty.call(response.torrents, id)) {
+          that._torrents.push(new Torrent(id, response.torrents[id]));
+        }
+      }
 
-				for (id in response.filters) {
-					if (response.filters.hasOwnProperty(id)) {
-						$("#filter_"+id).empty();
-						for (var i = 0; i < response.filters[id].length; i++) {
+      for (let id in response.filters.state) {
+        if ({}.hasOwnProperty.call(response.filters.state, id)) {
+          let tmp = response.filters.state[id];
+          that._globalInformation[tmp[0].toLowerCase()] = tmp[1];
+        }
+      }
 
-							var text = response.filters[id][i][0];
-							text = (text == "" ? "<blank>" : text);
-							text += " (" + response.filters[id][i][1] + ")";
+      for (let id in response.filters) {
+        if ({}.hasOwnProperty.call(response.filters, id)) {
+          jQuery('#filter_' + id).empty();
+          for (let i = 0; i < response.filters[id].length; i++) {
 
-							$("#filter_"+id).append($("<option>", {
-								value: response.filters[id][i][0],
-								text: text
-							}));
+            let text = response.filters[id][i][0];
+            text = (text === '' ? '<blank>' : text);
+            text += ' (' + response.filters[id][i][1] + ')';
 
-						}
-						$("#filter_"+id).val(localStorage["filter_"+id] || "All");
-					}
-				}
+            jQuery('#filter_' + id).append(jQuery('<option>', {
+              value : response.filters[id][i][0],
+              text  : text,
+            }));
 
-				response = null;
+          }
 
-				debug_log(torrents);
-			});
+          jQuery('#filter_' + id).val(localStorage['filter_' + id] || 'All');
+        }
+      }
 
-		return api;
-	};
+      debug_log(that._torrents);
+    });
 
-	return pub;
-}(jQuery));
+    return api;
+  }
 
-//Prototype function to be able to sort an array of objects by a particular parameter
-//http://stackoverflow.com/questions/19487815/passing-additional-parameters-in-the-comparefunction-of-sort-method
-Array.prototype.sortByParameter = function (sortParameter, invert) {
-	invert = (typeof invert === "undefined" || typeof invert !== "boolean") ? false : invert;
-	function compare(a, b) {
-		var left;
-		var right;
+  api(method, torrent, rmdata) {
+    var actions;
 
-		switch (sortParameter) {	//use switch in case I have to add more options later
-			case "position":
-				left = (a.position == -1) ? 999 : a.position;
-				right = (b.position == -1) ? 999 : b.position;
-				break;
-			default:
-				left = a[sortParameter];
-				right = b[sortParameter];
-				break;
-		}
+    if (method === 'core.set_torrent_auto_managed') {  // auto-managed toggle has different call format
+      actions = [torrent.id, !torrent.data.is_auto_managed];
+    } else if (method === 'core.remove_torrent') {    // remove torrent - if rmdata is true, data is removed as well
+      actions = [torrent.id, rmdata];
+    } else {
+      actions = [[torrent.id]];
+    }
 
-		if (left < right) {
-			return -1;
-		}
-		if (left > right) {
-			return 1;
-		}
-		return 0;
-	}
-	this.sort(compare);
-	if (invert) {
-		this.reverse();
-	}
-	return this;
+    return this._deluge.api(method, actions);
+  }
+
 }
+
+// Prototype function to be able to sort an array of objects by a particular parameter
+// http://stackoverflow.com/questions/19487815/passing-additional-parameters-in-the-comparefunction-of-sort-method
+Array.prototype.sortByParameter = function (sortParameter, invert) {
+  function compare(a, b) {
+    var left = a.data[sortParameter];
+    var right = b.data[sortParameter];
+
+    var seed_queue_pos = (invert ? Number.MIN_SAFE_INTEGER : Number.MAX_SAFE_INTEGER);
+
+    if (sortParameter === 'queue') {
+      // Always keep seeding (those with queue == -1) torrents below incomplete (those with queue >= 0)
+      left = (a.data[sortParameter] === -1) ? seed_queue_pos : left;
+      right = (b.data[sortParameter] === -1) ? seed_queue_pos : right;
+    }
+
+    if (typeof left === 'string') {
+      return left.localeCompare(right, {
+        sensitivity : 'base',
+        numeric     : true,
+      });
+    }
+
+    return left - right;
+  }
+  this.sort(compare);
+  if (invert) {
+    this.reverse();
+  }
+  return this;
+};

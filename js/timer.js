@@ -1,32 +1,38 @@
-var Timer = function (interval) {
-	var updateInterval = interval;
-	var handlers = [];
-	var timeOut = null;
-	var pub = {};
-	var i;
-	
-	function updateHandlers() {
-		for (i = 0; i < handlers.length; i += 1) {
-			handlers[i]();
-		}
-		timeOut = setTimeout(updateHandlers, interval);
-	}
-	
-	pub.subscribe = function (handler) {
-		handlers.push(handler);
-	};
-	
-	pub.unsubscribe = function (handler) {
-		handlers.pop(handler);
-	};
-		
-	pub.destroy = function () {
-		if (timeOut) {
-			clearTimeout(timeOut);
-		}
-	};
-	
-	updateHandlers();
+/* exported Timer */
 
-	return pub;
-};
+class Timer {
+
+  constructor(interval) {
+    this.interval = interval;
+
+    this.handlers = [];
+    this.timeOut = null;
+
+    // setup binds until it's handled in js natively
+    this.updateHandlers = this.updateHandlers.bind(this);
+
+    this.updateHandlers();
+  }
+
+  updateHandlers() {
+    for (let i = 0; i < this.handlers.length; i += 1) {
+      this.handlers[i]();
+    }
+    this.timeOut = setTimeout(this.updateHandlers, this.interval);
+  }
+
+  subscribe(handler) {
+    this.handlers.push(handler);
+  }
+
+  unsubscribe(handler) {
+    this.handlers.pop(handler);
+  }
+
+  destroy() {
+    if (this.timeOut) {
+      clearTimeout(this.timeOut);
+    }
+  }
+
+}
